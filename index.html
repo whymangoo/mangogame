@@ -2,214 +2,87 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>망고를 잡아라!</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>망고 잡기 게임</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            background-color: #f4f4f9;
-            overflow: hidden; /* 망고가 화면 밖으로 나가지 않도록 설정 */
-            user-select: none; /* 드래그 방지 */
-        }
-
-        /* 게임 영역 (화면 전체) */
+        /* 기본적인 게임 영역 스타일 */
         #game-area {
-            position: relative;
-            width: 100vw; /* 뷰포트 너비 */
-            height: 100vh; /* 뷰포트 높이 */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 20px;
-        }
-
-        /* 상태 표시 영역 */
-        #status-bar {
-            position: fixed; /* 항상 상단에 고정 */
-            top: 0;
             width: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 11px 0;
-            border-bottom: 2px solid #ccc;
-            z-index: 10;
+            height: 500px; /* 게임 영역 높이 설정 */
+            border: 2px solid #ff9800; /* 망고 색상 테두리 */
+            position: relative; /* 망고 위치 지정을 위한 기준 */
+            overflow: hidden; /* 망고가 영역 밖으로 나가지 않게 함 */
+            background-color: #fffde7; /* 연한 노란색 배경 */
+            cursor: crosshair;
         }
 
-        #score-display {
-            font-size: 3em;
-            color: #FFC107; /* 망고 색상 */
-            font-weight: bold;
-            display: inline-block;
-            margin-right: 30px;
-        }
-
-        #timer-display {
-            font-size: 2em;
-            color: #FF5722;
-            display: inline-block;
-        }
-
-        /* 망고 스타일 */
+        /* 망고 요소 스타일 */
         #mango {
-            position: absolute;
-            font-size: 4em; /* 망고 크기 */
+            position: absolute; /* 절대 위치 지정 */
+            width: 50px; /* 망고 크기 */
+            height: 50px;
+            /* 망고 이미지 대신 노란색 원으로 표시 */
+            background-color: #ffc107;
+            border-radius: 50%;
+            border: 3px solid #f57f17;
+            text-align: center;
+            line-height: 50px;
+            font-size: 24px;
             cursor: pointer;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%); /* 초기 중앙 배치 */
-            z-index: 5;
-            transition: opacity 0.1s; /* 클릭 시 사라지는 효과 */
+            transition: opacity 0.1s ease-out; /* 투명도 변화에 애니메이션 적용 */
+            user-select: none;
+        }
+        
+        /* 게임 정보 표시 영역 스타일 */
+        #info-bar {
+            padding: 10px;
+            background-color: #f57f17;
+            color: white;
+            font-size: 1.2em;
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 10px;
         }
 
-        /* 게임 시작 버튼 (중앙에 위치) */
+        /* 시작 버튼 스타일 */
         #start-button {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px 40px;
+            padding: 10px 20px;
             font-size: 1.5em;
             cursor: pointer;
             background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 10px;
-            z-index: 20;
+            border-radius: 5px;
+            display: block;
+            margin: 20px auto;
         }
 
+        /* 메시지 영역 스타일 */
         #message-area {
-            position: absolute;
-            top: 70%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 1.8em;
-            color: #333;
-            z-index: 20;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+            text-align: center;
+            font-size: 1.3em;
+            margin-top: 15px;
+            min-height: 30px;
         }
     </style>
 </head>
 <body>
+
+    <h1>✨ 망고 잡기 게임 ✨</h1>
+
+    <div id="info-bar">
+        <span>점수: <strong id="score-display">0</strong></span>
+        <span>남은 시간: <strong id="timer-display">30초</strong></span>
+    </div>
+
+    <button id="start-button">게임 시작</button>
+
+    <div id="message-area">버튼을 눌러 게임을 시작하세요!</div>
+
     <div id="game-area">
-        
-        <div id="status-bar">
-            <span id="score-label">잡은 망고:</span> 
-            <span id="score-display">0</span>
-            <span id="timer-label">| 남은 시간:</span>
-            <span id="timer-display">30초</span>
-        </div>
-
         <div id="mango">🥭</div>
-
-        <button id="start-button">게임 시작!</button>
-        
-        <div id="message-area">버튼을 클릭하여 망고 사냥을 시작하세요!</div>
     </div>
 
     <script>
         const GAME_DURATION = 30; // 30초
-        let score = 0;
-        let timeLeft = GAME_DURATION;
-        let gameActive = false;
-        let timerId;
-
-        const gameArea = document.getElementById('game-area');
-        const scoreDisplay = document.getElementById('score-display');
-        const timerDisplay = document.getElementById('timer-display');
-        const mangoElement = document.getElementById('mango');
-        const startButton = document.getElementById('start-button');
-        const messageArea = document.getElementById('message-area');
-
-        // 망고를 숨김 상태로 시작
-        mangoElement.style.display = 'none';
-
-        // 1. 망고의 위치를 무작위로 변경하는 함수
-        function moveMango() {
-            // 게임 영역의 크기를 가져옵니다.
-            const areaWidth = gameArea.clientWidth;
-            const areaHeight = gameArea.clientHeight;
-
-            // 망고의 크기를 고려하여 안전한 범위 내에서 무작위 위치를 계산
-            // 상단 상태바 때문에 Y축은 100px 정도 아래부터 시작
-            const minX = 0;
-            const minY = 100; // 상단바를 피하기 위한 최소 Y 좌표
-            const maxX = areaWidth - mangoElement.clientWidth;
-            const maxY = areaHeight - mangoElement.clientHeight;
-
-            // 0부터 최대값 사이의 정수 난수 생성
-            const randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
-            const randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
-            
-            // 위치 적용
-            mangoElement.style.left = `${randomX}px`;
-            mangoElement.style.top = `${randomY}px`;
-            
-            // 망고를 다시 보이게 합니다.
-            mangoElement.style.opacity = '1';
-        }
-
-        // 2. 망고를 클릭했을 때 실행되는 함수
-        function handleMangoClick() {
-            if (gameActive) {
-                score++;
-                scoreDisplay.textContent = score;
-
-                // 클릭 시 망고를 잠시 숨긴 후 새 위치로 이동
-                mangoElement.style.opacity = '0'; // 투명하게 만들어 클릭했음을 시각적으로 표시
-                
-                // 다음 위치로 즉시 이동
-                moveMango();
-            }
-        }
-
-        // 3. 게임 시작 함수
-        function startGame() {
-            gameActive = true;
-            score = 0;
-            timeLeft = GAME_DURATION;
-            scoreDisplay.textContent = score;
-            timerDisplay.textContent = `${GAME_DURATION}초`;
-            messageArea.textContent = "망고를 잡으세요!";
-            
-            startButton.style.display = 'none'; // 시작 버튼 숨기기
-            mangoElement.style.display = 'block'; // 망고 보이기
-
-            // 1초마다 시간 줄이는 타이머 시작
-            timerId = setInterval(updateTimer, 1000);
-
-            // 30초 후에 게임을 끝내는 타이머 설정
-            setTimeout(endGame, GAME_DURATION * 1000);
-            
-            // 첫 망고 위치 지정
-            moveMango();
-        }
-
-        // 4. 타이머 업데이트 함수
-        function updateTimer() {
-            timeLeft--;
-            timerDisplay.textContent = `${timeLeft}초`;
-
-            if (timeLeft <= 0) {
-                clearInterval(timerId);
-            }
-        }
-
-        // 5. 게임 종료 함수
-        function endGame() {
-            gameActive = false;
-            clearInterval(timerId);
-            timerDisplay.textContent = "종료!";
-            mangoElement.style.display = 'none'; // 망고 숨기기
-            startButton.style.display = 'block'; // 시작 버튼 다시 보이기
-            startButton.textContent = "다시 시작";
-
-            messageArea.innerHTML = `**게임 종료!**<br>총 ${GAME_DURATION}초 동안 **${score}개**의 망고를 잡았습니다.<br>다시 시작하려면 버튼을 누르세요.`;
-        }
-
-        // 이벤트 리스너 연결
-        startButton.addEventListener('click', startGame);
-        mangoElement.addEventListener('click', handleMangoClick);
-    </script>
-</body>
-</html>
+        // **[추가]** 망고가 자동으로 이동하는 간격 (밀리초 단위, 0.8초마다 이동
