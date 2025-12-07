@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>간단한 클릭 게임</title>
+    <style>
+        /* 2. CSS 코드 (여기에 작성) */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f4f4f9;
+        }
+
+        #score-display {
+            font-size: 4em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #click-button {
+            padding: 15px 30px;
+            font-size: 1.5em;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        #click-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🖱️ 마우스 클릭 게임</h1>
+    
+    <div id="score-display">0</div>
+    
+    <button id="click-button">클릭하세요!</button>
+
+    <script>
+        /* 3. JavaScript 코드 (여기에 작성) */
+        let score = 0; // 초기 점수 설정
+        const scoreDisplay = document.getElementById('score-display');
+        const clickButton = document.getElementById('click-button');
+
+        // 버튼 클릭 시 실행될 함수 정의
+        function handleButtonClick() {
+            score = score + 1; // 점수를 1 증가
+            scoreDisplay.textContent = score; // 화면에 새로운 점수를 업데이트
+        }
+
+        // 버튼에 '클릭' 이벤트 리스너 추가
+        clickButton.addEventListener('click', handleButtonClick);
+
+        // 
+    </script>
+</body>
+</html>
